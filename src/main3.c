@@ -42,40 +42,35 @@ void mutate(part_t *part)
     part->buf[bit] ? (part->buf[bit] = 0) : (part->buf[bit] = 1);
 }
 
-void cross(part_t *new, part_t *old, part_t *best)
+void cross(part_t *gen, part_t *best)
 {
-    qsort(old, PER_GEN, sizeof(part_t), cmp_diff);
-
-    new[0] = old[0];
-    new[1] = old[1];
+    qsort(gen, PER_GEN, sizeof(part_t), cmp_diff);
 
     for (int i = 2; i < PER_GEN; i += 2)
     {
-        new[i] = old[i];
-        new[i + 1] = old[i + 1];
-        swap(&new[i], &new[i + 1]);
+        swap(&gen[i], &gen[i + 1]);
 
         if (rand() % 2)
         {
-            mutate(&new[i]);
+            mutate(&gen[i]);
         }
 
         if (rand() % 2)
         {
-            mutate(&new[i + 1]);
+            mutate(&gen[i + 1]);
         }
 
-        eval(&new[i]);
-        eval(&new[i + 1]);
+        eval(&gen[i]);
+        eval(&gen[i + 1]);
 
-        if (new[i].diff < best->diff)
+        if (gen[i].diff < best->diff)
         {
-            copy(best, &new[i]);
+            copy(best, &gen[i]);
         }
 
-        if (new[i + 1].diff < best->diff)
+        if (gen[i + 1].diff < best->diff)
         {
-            copy(best, &new[i + 1]);
+            copy(best, &gen[i + 1]);
         }
     }
 }
@@ -97,8 +92,7 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    part_t *old = malloc(PER_GEN * sizeof(part_t));
-    part_t *new = malloc(PER_GEN * sizeof(part_t));
+    part_t *gen = malloc(PER_GEN * sizeof(part_t));
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
@@ -106,26 +100,26 @@ int main(int argc, char *argv[])
     // gen 0
     for (int i = 0; i < PER_GEN; i++)
     {
-        pinit(&old[i]);
+        pinit(&gen[i]);
         for (int j = 0; j < size; j++)
         {
             if (rand() % 2)
             {
-                old[i].buf[j] = 1;
+                gen[i].buf[j] = 1;
             }
         }
     }
 
     for (int i = 0; i < MAX_GEN; i++)
     {
-        cross(new, old, &best);
+        cross(gen, &best);
     }
 
     gettimeofday(&end, NULL);
 
     printf("sum(S1) = %d\nsum(S2) = %d\n", best.sum1, best.sum2);
     int elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
-    printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds", elapsed, elapsed / 1000, (double)elapsed / 1000000);
+    printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds\n", elapsed, elapsed / 1000, (double)elapsed / 1000000);
 
     return 0;
 }

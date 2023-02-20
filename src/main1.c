@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    do
+    while (inc(&part))
     {
         eval(&part);
 
@@ -30,14 +30,13 @@ int main(int argc, char *argv[])
         {
             copy(&best, &part);
         }
-
-    } while (inc(&part));
+    }
 
     gettimeofday(&end, NULL);
 
     printp(&best);
     int elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
-    printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds", elapsed, elapsed / 1000, (double)elapsed / 1000000);
+    printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds\n", elapsed, elapsed / 1000, (double)elapsed / 1000000);
 
     return 0;
 }

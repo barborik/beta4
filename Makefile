@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -g -std=c99 -Wall -Wextra -Wpedantic
+CFLAGS = -g -Wall -Wextra -Wpedantic
 LFLAGS = -l zahl
 
 INCL = -I lib/libzahl
