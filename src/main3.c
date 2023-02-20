@@ -1,11 +1,18 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "part.h"
 
 int PER_GEN;
 int MAX_GEN;
+
+typedef struct
+{
+    part_t *gen;
+    part_t best;
+} gen_t;
 
 int cmp_diff(const void *a, const void *b)
 {
@@ -72,7 +79,23 @@ void cross(part_t *gen, part_t *best)
         {
             copy(best, &gen[i + 1]);
         }
+
+        if (!best->diff)
+        {
+            return;
+        }
     }
+}
+
+void *run(void *arg)
+{
+    gen_t *gen = arg;
+    for (int i = 0; i < MAX_GEN; i++)
+    {
+        cross(gen->gen, &gen->best);
+    }
+
+    return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -87,32 +110,53 @@ int main(int argc, char *argv[])
     MAX_GEN = atoi(argv[2]);
     PER_GEN = atoi(argv[3]);
 
+    int nthreads = get_nthreads();
+
+    pthread_t *threads = malloc(nthreads * sizeof(pthread_t));
+    gen_t *gens = malloc(nthreads * sizeof(part_t));
+    for (int i = 0; i < nthreads; i++)
+    {
+        pinit(&gens[i].best);
+    }
+
     part_t best;
     pinit(&best);
 
     srand(time(NULL));
 
-    part_t *gen = malloc(PER_GEN * sizeof(part_t));
-
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    // gen 0
-    for (int i = 0; i < PER_GEN; i++)
+    for (int i = 0; i < nthreads; i++)
     {
-        pinit(&gen[i]);
-        for (int j = 0; j < size; j++)
+        gens[i].gen = malloc(PER_GEN * sizeof(part_t));
+        part_t *gen = gens[i].gen;
+
+        for (int i = 0; i < PER_GEN; i++)
         {
-            if (rand() % 2)
+            pinit(&gen[i]);
+            for (int j = 0; j < size; j++)
             {
-                gen[i].buf[j] = 1;
+                if (rand() % 2)
+                {
+                    gen[i].buf[j] = 1;
+                }
             }
         }
+
+        pthread_create(&threads[i], NULL, run, &gens[i]);
     }
 
-    for (int i = 0; i < MAX_GEN; i++)
+    for (int i = 0; i < nthreads; i++)
     {
-        cross(gen, &best);
+        pthread_join(threads[i], NULL);
+
+        if (gens[i].best.diff < best.diff)
+        {
+            copy(&best, &gens[i].best);
+        }
+
+        free(gens[i].gen);
     }
 
     gettimeofday(&end, NULL);

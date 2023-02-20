@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <stdint.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -20,7 +21,7 @@ typedef struct
     int sum1;
     int sum2;
     int diff;
-    int *buf; // big endian
+    int8_t *buf; // big endian
 } part_t;
 
 int *set;
