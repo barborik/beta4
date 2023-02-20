@@ -1,31 +1,43 @@
-#include <math.h>
+#include <time.h>
 #include <stdio.h>
+
 #include "part.h"
 
-int diff()
+int main(int argc, char *argv[])
 {
-    size_t sum1 = 0, sum2 = 0;
-
-    for (int i = 0; i < n; i++)
+    if (argc != 2)
     {
-        sub[i] ? sum1 += set[i] : sum2 += set[i];
+        printf("usage: %s <number of items>\n", argv[0]);
+        return 1;
     }
 
-    return abs(sum1 - sum2);
-}
+    init(atoi(argv[1]));
 
-void load(int index)
-{
-    
-}
+    part_t part;
+    part_t best;
 
-int main()
-{
-    init(10);
+    pinit(&part);
+    pinit(&best);
 
-    for (size_t i = 0; i < 1 << n; i++)
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+
+    do
     {
-    }
+        eval(&part);
+
+        if (part.diff < best.diff)
+        {
+            copy(&best, &part);
+        }
+
+    } while (inc(&part));
+
+    gettimeofday(&end, NULL);
+
+    printp(&best);
+    int elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
+    printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds", elapsed, elapsed / 1000, (double)elapsed / 1000000);
 
     return 0;
 }

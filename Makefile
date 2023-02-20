@@ -1,10 +1,10 @@
 CC = gcc
 
 CFLAGS = -g -std=c99 -Wall -Wextra -Wpedantic
-LFLAGS = 
+LFLAGS = -l zahl
 
-INCL = 
-LIBS = 
+INCL = -I lib/libzahl
+LIBS = -L lib/libzahl
 
 SRC = $(wildcard src/*.c)
 OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
