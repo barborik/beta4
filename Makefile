@@ -1,7 +1,7 @@
 CC = gcc
 
-CFLAGS = -O3 -Wall -Wextra -Wpedantic
-LFLAGS = -l zahl
+CFLAGS = -O3 -std=c99 -Wall -Wextra -Wpedantic
+LFLAGS = 
 
 INCL = -I lib/libzahl
 LIBS = -L lib/libzahl
@@ -19,6 +19,9 @@ TARGET_v1 := $(TARGET_v1).exe
 TARGET_v2 := $(TARGET_v2).exe
 TARGET_v3 := $(TARGET_v3).exe
 TARGET_v4 := $(TARGET_v4).exe
+LFLAGS += -l zahl-mingw
+else
+LFLAGS += -l zahl
 endif
 
 v1: obj/main1.o

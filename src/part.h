@@ -1,6 +1,8 @@
 #ifndef __PART_
 #define __PART_
 
+#define KNAPSACK 20
+
 #include <time.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -9,8 +11,10 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#define sleep(x) Sleep(x)
 #else
 #include <unistd.h>
+#define sleep(x) usleep(x * 1000)
 #endif
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -18,11 +22,20 @@
 
 typedef struct
 {
-    int sum1;
-    int sum2;
-    int diff;
-    int8_t *buf; // big endian
+    size_t sum1;
+    size_t sum2;
+    size_t diff;
+    int8_t *buf;
 } part_t;
+
+#ifndef KNAPSACK
+/*
++=============================+
+|                             |
+|          PARTITION          |
+|                             |
++=============================+
+*/
 
 int *set;
 int size;
@@ -30,7 +43,7 @@ int size;
 void init(int n)
 {
     size = n;
-    set = malloc(sizeof(int) * size);
+    set = malloc(sizeof(int *) * size);
 
     srand(time(NULL));
     for (int i = 0; i < n; i++)
@@ -41,9 +54,9 @@ void init(int n)
 
 void pinit(part_t *part)
 {
-    part->diff = INT_MAX;
-    part->buf = malloc(sizeof(int) * size);
-    memset(part->buf, 0, sizeof(int) * size);
+    part->diff = SIZE_MAX;
+    part->buf = malloc(sizeof(int8_t) * size);
+    memset(part->buf, 0, sizeof(int8_t) * size);
 }
 
 void copy(part_t *dst, part_t *src)
@@ -51,7 +64,7 @@ void copy(part_t *dst, part_t *src)
     dst->sum1 = src->sum1;
     dst->sum2 = src->sum2;
     dst->diff = src->diff;
-    memcpy(dst->buf, src->buf, sizeof(int) * size);
+    memcpy(dst->buf, src->buf, sizeof(int8_t) * size);
 }
 
 void eval(part_t *part)
@@ -107,7 +120,7 @@ void printp(part_t *part)
             printf(" %d", set[i]);
         }
     }
-    printf(" = %d\n", part->sum1);
+    printf(" = %zu\n", part->sum1);
 
     printf("S2 |");
     for (int i = 0; i < size; i++)
@@ -117,8 +130,116 @@ void printp(part_t *part)
             printf(" %d", set[i]);
         }
     }
-    printf(" = %d\n", part->sum2);
+    printf(" = %zu\n", part->sum2);
 }
+
+#else
+/*
++============================+
+|                            |
+|          KNAPSACK          |
+|                            |
++============================+
+*/
+
+int **set;
+int size;
+int cap;
+
+void init(int n)
+{
+    cap = KNAPSACK;
+    size = n;
+    set = malloc(sizeof(int *) * size);
+
+    srand(time(NULL));
+    for (int i = 0; i < n; i++)
+    {
+        set[i] = malloc(2 * sizeof(int));
+        set[i][0] = rand() % 10 + 1;
+        set[i][1] = rand() % 10 + 1;
+    }
+}
+
+void pinit(part_t *part)
+{
+    part->diff = SIZE_MAX;
+    part->buf = malloc(sizeof(int8_t) * size);
+    memset(part->buf, 0, sizeof(int8_t) * size);
+}
+
+void copy(part_t *dst, part_t *src)
+{
+    dst->sum1 = src->sum1;
+    dst->sum2 = src->sum2;
+    dst->diff = src->diff;
+    memcpy(dst->buf, src->buf, sizeof(int8_t) * size);
+}
+
+void eval(part_t *part)
+{
+    size_t wgt = 0, val = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        if (part->buf[i])
+        {
+            int *tmp = set[i];
+            wgt += tmp[0];
+            val += tmp[1];
+        }
+    }
+
+    part->sum1 = wgt;
+    part->sum2 = val;
+    part->diff = 0;
+    (wgt > cap) ? (part->diff = SIZE_MAX) : (part->diff = SIZE_MAX - val);
+}
+
+int cmp(part_t *part1, part_t *part2)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (part1->buf[i] != part2->buf[i])
+        {
+            return part1->buf[i] - part2->buf[i];
+        }
+    }
+    return 0;
+}
+
+int inc(part_t *part)
+{
+    for (int i = size - 1; i > -1; i--)
+    {
+        if (!part->buf[i])
+        {
+            part->buf[i] = 1;
+            for (int j = i + 1; j < size; j++)
+            {
+                part->buf[j] = 0;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void printp(part_t *part)
+{
+    printf("KNAPSACK (wgt, val) |");
+    for (int i = 0; i < size; i++)
+    {
+        if (part->buf[i])
+        {
+            printf(" (%d, %d)", set[i][0], set[i][1]);
+        }
+    }
+    printf("\nsum(wgt) = %zu\n", part->sum1);
+    printf("sum(val) = %zu\n", part->sum2);
+}
+
+#endif
 
 int get_nthreads()
 {

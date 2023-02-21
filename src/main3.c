@@ -1,18 +1,20 @@
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 #include "part.h"
 
 int PER_GEN;
 int MAX_GEN;
 
+int found = 0;
+
 typedef struct
 {
     part_t *gen;
     part_t best;
-} gen_t;
+} pop_t;
 
 int cmp_diff(const void *a, const void *b)
 {
@@ -89,10 +91,21 @@ void cross(part_t *gen, part_t *best)
 
 void *run(void *arg)
 {
-    gen_t *gen = arg;
+    pop_t *pop = arg;
     for (int i = 0; i < MAX_GEN; i++)
     {
-        cross(gen->gen, &gen->best);
+        cross(pop->gen, &pop->best);
+
+        if (!pop->best.diff)
+        {
+            found = 1;
+            return NULL;
+        }
+
+        if (found)
+        {
+            return NULL;
+        }
     }
 
     return NULL;
@@ -111,52 +124,51 @@ int main(int argc, char *argv[])
     PER_GEN = atoi(argv[3]);
 
     int nthreads = get_nthreads();
-
     pthread_t *threads = malloc(nthreads * sizeof(pthread_t));
-    gen_t *gens = malloc(nthreads * sizeof(part_t));
-    for (int i = 0; i < nthreads; i++)
-    {
-        pinit(&gens[i].best);
-    }
+
+    srand(time(NULL));
 
     part_t best;
     pinit(&best);
 
-    srand(time(NULL));
+    pop_t *pops = malloc(nthreads * sizeof(pop_t));
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
     for (int i = 0; i < nthreads; i++)
     {
-        gens[i].gen = malloc(PER_GEN * sizeof(part_t));
-        part_t *gen = gens[i].gen;
+        pop_t *pop = &pops[i];
+        pop->gen = malloc(PER_GEN * sizeof(part_t));
+
+        pinit(&pop->best);
 
         for (int i = 0; i < PER_GEN; i++)
         {
-            pinit(&gen[i]);
+            pinit(&pop->gen[i]);
             for (int j = 0; j < size; j++)
             {
                 if (rand() % 2)
                 {
-                    gen[i].buf[j] = 1;
+                    pop->gen[i].buf[j] = 1;
                 }
             }
         }
 
-        pthread_create(&threads[i], NULL, run, &gens[i]);
+        pthread_create(&threads[i], NULL, run, &pops[i]);
     }
 
     for (int i = 0; i < nthreads; i++)
     {
+        pop_t *pop = &pops[i];
         pthread_join(threads[i], NULL);
 
-        if (gens[i].best.diff < best.diff)
+        if (pop->best.diff < best.diff)
         {
-            copy(&best, &gens[i].best);
+            copy(&best, &pop->best);
         }
 
-        free(gens[i].gen);
+        free(pop->gen);
     }
 
     gettimeofday(&end, NULL);
