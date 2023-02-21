@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 
     gettimeofday(&end, NULL);
 
-    printf("sum(S1) = %d\nsum(S2) = %d\n", best.sum1, best.sum2);
+    printp_brief(&best);
     int elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
     printf("total elapsed time:\n%d microseconds\n%d milliseconds\n%f seconds\n", elapsed, elapsed / 1000, (double)elapsed / 1000000);
 

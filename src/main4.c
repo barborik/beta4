@@ -1,4 +1,4 @@
-#include <stdio.h>
+/*#include <stdio.h>
 
 #include "netlib.h"
 
@@ -32,5 +32,28 @@ int main(int argc, char *argv[])
 
     printf("done\n");
 
+    return 0;
+}
+*/
+
+const char *shaderCode =
+    "#version 430\n"
+    "layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;\n"
+    "layout(std430, binding = 0) buffer Output {\n"
+    "    uint result;\n"
+    "} output;\n"
+    "void main() {\n"
+    "    output.result = 42;\n"
+    "}\n";
+
+#include <stdio.h>
+#include <GL/glew.h>
+
+int main()
+{
+    if (glewInit() != GLEW_OK)
+    {
+        return 1;
+    }
     return 0;
 }

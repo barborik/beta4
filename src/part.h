@@ -1,7 +1,7 @@
 #ifndef __PART_
 #define __PART_
 
-#define KNAPSACK 20
+#define KNAPSACK 60
 
 #include <time.h>
 #include <stdlib.h>
@@ -133,6 +133,11 @@ void printp(part_t *part)
     printf(" = %zu\n", part->sum2);
 }
 
+void printp_brief(part_t *part)
+{
+    printf("sum(S1) = %d\nsum(S2) = %d\n", part->sum1, part->sum2);
+}
+
 #else
 /*
 +============================+
@@ -142,7 +147,7 @@ void printp(part_t *part)
 +============================+
 */
 
-int **set;
+int *set;
 int size;
 int cap;
 
@@ -150,14 +155,13 @@ void init(int n)
 {
     cap = KNAPSACK;
     size = n;
-    set = malloc(sizeof(int *) * size);
+    set = malloc(sizeof(int) * size * 2);
 
     srand(time(NULL));
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < size * 2; i += 2)
     {
-        set[i] = malloc(2 * sizeof(int));
-        set[i][0] = rand() % 10 + 1;
-        set[i][1] = rand() % 10 + 1;
+        set[i + 0] = rand() % 10 + 1;
+        set[i + 1] = rand() % 10 + 1;
     }
 }
 
@@ -180,13 +184,12 @@ void eval(part_t *part)
 {
     size_t wgt = 0, val = 0;
 
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < size * 2; i += 2)
     {
         if (part->buf[i])
         {
-            int *tmp = set[i];
-            wgt += tmp[0];
-            val += tmp[1];
+            wgt += set[i + 0];
+            val += set[i + 1];
         }
     }
 
@@ -228,15 +231,20 @@ int inc(part_t *part)
 void printp(part_t *part)
 {
     printf("KNAPSACK (wgt, val) |");
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < size * 2; i += 2)
     {
         if (part->buf[i])
         {
-            printf(" (%d, %d)", set[i][0], set[i][1]);
+            printf(" (%d, %d)", set[i], set[i + 1]);
         }
     }
     printf("\nsum(wgt) = %zu\n", part->sum1);
     printf("sum(val) = %zu\n", part->sum2);
+}
+
+void printp_brief(part_t *part)
+{
+    printp(part);
 }
 
 #endif
