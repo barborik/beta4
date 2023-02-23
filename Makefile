@@ -1,10 +1,10 @@
 CC = gcc
 
 CFLAGS = -Ofast -std=c99 -Wall -Wextra -Wpedantic -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL
-LFLAGS = -static
+LFLAGS = -lm
 
-INCL = -I lib/libzahl -I lib/glew
-LIBS = -L lib/libzahl -L lib/glew
+INCL = -I lib/libzahl -I lib/glew -I lib/glfw
+LIBS = -L lib/libzahl -L lib/glew -L lib/glfw
 
 SRC = $(wildcard src/*.c)
 OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
@@ -19,9 +19,9 @@ TARGET_v1 := $(TARGET_v1).exe
 TARGET_v2 := $(TARGET_v2).exe
 TARGET_v3 := $(TARGET_v3).exe
 TARGET_v4 := $(TARGET_v4).exe
-LFLAGS += -l zahl-mingw -l glew32
+LFLAGS += -static -lzahl-mingw
 else
-LFLAGS += -l zahl -l glew32
+LFLAGS += -lzahl -lGLEW -lglfw3 -lX11 -lGL
 endif
 
 v1: obj/main1.o
