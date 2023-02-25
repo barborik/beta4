@@ -124,13 +124,31 @@ void hardware()
         return;
     }
 
+    // get max number of work groups
+    GLint groups[3];
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &groups[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &groups[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &groups[2]);
+
+    int nthreads;
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &nthreads);
+    printf("XYZ: %d\n", nthreads);
+
+    // set up input buffer
+    int input_value = 21;
+    GLuint input_buffer;
+    glGenBuffers(1, &input_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, input_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int), &input_value, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, input_buffer);
+
     // run the compute shader
     glUseProgram(program);
     GLuint buffer;
     glGenBuffers(1, &buffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int), NULL, GL_DYNAMIC_DRAW);
-    glDispatchCompute(1, 1, 1);
+    glDispatchCompute(groups[0], groups[1], groups[2]);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     unsigned int result;
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &result);
@@ -140,7 +158,7 @@ void hardware()
     free(src);
     glDeleteShader(shader);
     glDeleteProgram(program);
-    glDeleteBuffers(1, &buffer);
+    //glDeleteBuffers(1, &buffer);
     glfwTerminate();
 }
 
