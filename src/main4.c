@@ -20,7 +20,11 @@ void *nb_getch(void *arg)
 {
     while (1)
     {
-        last = getch();
+        int tmp = getchar();
+        if (tmp == 'R' || tmp == 'Q')
+        {
+            last = tmp;
+        }
     }
 }
 
@@ -43,6 +47,8 @@ void runc(char *ipaddr, char *port)
         if (nlib_accept(&this, &worker))
         {
             printf("%s CONNECTED TO THE NETWORK\n", worker.ipaddr);
+
+            nlib_noblock(&worker);
             dl_add(&pool, &worker);
 
             // send set

@@ -64,7 +64,7 @@ The network always needs to have exactly one COMMANDER program and at lest one W
 ```[COMMANDER: MAX GEN]``` - maximum number of generations to simulate per thread<br>
 ```[COMMANDER: PER GEN]``` - population number per generation<br>
 which the WORKER program receives on connect.<br>
-When you are done connecting all WORKER programs to the COMMANDER program press R (needs to be capital, hold down shift). This will send a RUN command to all the WORKER programs. When a WORKER program is done with simulating the specified number of generations it sends its best result to the COMMANDER program. Once all WORKER programs are done simulating the final "best" solution is printed out on the COMMANDER program which exits right after, disconnecting all the WORKER programs. To exit the COMMANDER program a ctrl + c won't do, because of the non-blocking input that runs in a separate thread. To exit the COMMANDER program when needed press Q (needs to be capital, again).
+When you are done connecting all WORKER programs to the COMMANDER program press R (needs to be capital, hold down shift) and then ENTER. This will send a RUN command to all the WORKER programs. When a WORKER program is done with simulating the specified number of generations it sends its best result to the COMMANDER program. Once all WORKER programs are done simulating the final "best" solution is printed out on the COMMANDER program which exits right after, disconnecting all the WORKER programs. To exit the COMMANDER program a ctrl + c won't do, because of the non-blocking input that runs in a separate thread. To exit the COMMANDER program when needed press Q (needs to be capital, again) and then ENTER.
 
 
 
