@@ -1,16 +1,117 @@
+/*
++=============================+
+|                             |
+|          PARTITION          |
+|                             |
++=============================+
+*/
+
 #version 430
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding = 0) buffer Input 
-{
-    uint value;
-} part;
+#define MAX_SIZE 64
 
-layout(std430, binding = 1) buffer Output
-{
-    uint result;
-} best;
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
-void main() {
-    best.result = part.value;
+layout(std430, binding = 0) buffer Set
+{
+    int size;
+    int set[];
+};
+
+struct part_t
+{
+    uint sum1;
+    uint sum2;
+    uint diff;
+    bool buf[MAX_SIZE];
+};
+
+struct ival_t
+{
+    part_t start;
+    part_t end;
+};
+
+layout(std430, binding = 1) buffer Intervals
+{
+    ival_t ivals[];
+};
+
+layout(std430, binding = 2) buffer Output
+{
+    part_t bests[];
+};
+
+void eval(inout part_t part)
+{
+    int sum1 = 0, sum2 = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        part.buf[i] ? (sum1 += set[i]) : (sum2 += set[i]);
+    }
+
+    part.sum1 = sum1;
+    part.sum2 = sum2;
+    part.diff = max(sum1, sum2) - min(sum1, sum2);
+}
+
+bool cmp(part_t part1, part_t part2)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (part1.buf[i] != part2.buf[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+int inc(inout part_t part)
+{
+    for (int i = size - 1; i > -1; i--)
+    {
+        if (!part.buf[i])
+        {
+            part.buf[i] = true;
+            for (int j = i + 1; j < size; j++)
+            {
+                part.buf[j] = false;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void main() 
+{
+
+    uint index = gl_GlobalInvocationID.x;
+
+    bests[index].diff = -1;
+
+    ival_t ival = ivals[index];
+
+    eval(ival.start);
+    bests[index] = ival.start;
+    while (cmp(ival.start, ival.end))
+    {
+        eval(ival.start);
+
+        if (ival.start.diff < bests[index].diff)
+        {
+            bests[index] = ival.start;
+        }
+
+        if (bests[index].diff == 0)
+        {
+            return;
+        }
+
+        inc(ival.start);
+    }
 }

@@ -3,113 +3,8 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+#include "gen.h"
 #include "part.h"
-
-int PER_GEN;
-int MAX_GEN;
-
-int found = 0;
-
-typedef struct
-{
-    part_t *gen;
-    part_t best;
-} pop_t;
-
-int cmp_diff(const void *a, const void *b)
-{
-    part_t *part1 = a;
-    part_t *part2 = b;
-
-    if (part1->diff > part2->diff)
-    {
-        return 1;
-    }
-
-    if (part1->diff < part2->diff)
-    {
-        return -1;
-    }
-
-    return 0;
-}
-
-void swap(part_t *part1, part_t *part2)
-{
-    int swp = rand() % size, tmp;
-    for (int i = 0; i < swp; i++)
-    {
-        tmp = part1->buf[i];
-        part1->buf[i] = part2->buf[i];
-        part2->buf[i] = tmp;
-    }
-}
-
-void mutate(part_t *part)
-{
-    int bit = rand() % size;
-    part->buf[bit] ? (part->buf[bit] = 0) : (part->buf[bit] = 1);
-}
-
-void cross(part_t *gen, part_t *best)
-{
-    qsort(gen, PER_GEN, sizeof(part_t), cmp_diff);
-
-    for (int i = 2; i < PER_GEN; i += 2)
-    {
-        swap(&gen[i], &gen[i + 1]);
-
-        if (rand() % 2)
-        {
-            mutate(&gen[i]);
-        }
-
-        if (rand() % 2)
-        {
-            mutate(&gen[i + 1]);
-        }
-
-        eval(&gen[i]);
-        eval(&gen[i + 1]);
-
-        if (gen[i].diff < best->diff)
-        {
-            copy(best, &gen[i]);
-        }
-
-        if (gen[i + 1].diff < best->diff)
-        {
-            copy(best, &gen[i + 1]);
-        }
-
-        if (!best->diff)
-        {
-            return;
-        }
-    }
-}
-
-void *run(void *arg)
-{
-    pop_t *pop = arg;
-    for (int i = 0; i < MAX_GEN; i++)
-    {
-        cross(pop->gen, &pop->best);
-
-        if (!pop->best.diff)
-        {
-            found = 1;
-            return NULL;
-        }
-
-        if (found)
-        {
-            return NULL;
-        }
-    }
-
-    return NULL;
-}
 
 int main(int argc, char *argv[])
 {
@@ -128,7 +23,6 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    part_t best;
     pinit(&best);
 
     pop_t *pops = malloc(nthreads * sizeof(pop_t));

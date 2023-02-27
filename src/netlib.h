@@ -21,6 +21,7 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <stdint.h>
 
 #else
 
@@ -204,6 +205,7 @@ static int nlib_noblock(sock_t *sock)
         __func_fail("ioctlsocket()");
         return 0;
     }
+    return 1;
 }
 
 #else
@@ -229,13 +231,11 @@ static int nlib_noblock(sock_t *sock)
 
 static int nlib_mksock(sock_t *sock, char *ipaddr, char *port, int type, int proto)
 {
-    strcpy(sock->port, port);
+    if (port) strcpy(sock->port, port);
 
     // creating socket
-    if (proto == NLIB_TCP)
-        sock->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (proto == NLIB_UDP)
-        sock->socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (proto == NLIB_TCP) sock->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (proto == NLIB_UDP) sock->socket = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
 
     if (sock->socket < 0)
     {
@@ -249,10 +249,8 @@ static int nlib_mksock(sock_t *sock, char *ipaddr, char *port, int type, int pro
         struct sockaddr_in sin = {0};
 
         sin.sin_family = AF_INET;
-        if (ipaddr)
-            sin.sin_addr.s_addr = inet_addr(ipaddr);
-        else
-            sin.sin_addr.s_addr = INADDR_ANY;
+        if (ipaddr) sin.sin_addr.s_addr = inet_addr(ipaddr);
+        else sin.sin_addr.s_addr = INADDR_ANY;
         sin.sin_port = htons(atoi(port));
 
         if (bind(sock->socket, (struct sockaddr *)&sin, sizeof(sin)) < 0)

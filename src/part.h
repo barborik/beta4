@@ -1,7 +1,7 @@
 #ifndef __PART_
 #define __PART_
 
-#define KNAPSACK 60
+//#define KNAPSACK 60
 
 #include <time.h>
 #include <stdlib.h>

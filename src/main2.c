@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/time.h>
-
-#include "zahl.h"
+#include <zahl.h>
 
 #include "part.h"
 

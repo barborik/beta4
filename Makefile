@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Ofast -std=c99 -Wall -Wextra -Wpedantic -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL
+CFLAGS = -Ofast -std=c99 -Wall -Wextra -Wpedantic -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL -Wno-unused-function
 LFLAGS = -lm
 
 INCL = -I lib/libzahl -I lib/glew -I lib/glfw
@@ -19,7 +19,7 @@ TARGET_v1 := $(TARGET_v1).exe
 TARGET_v2 := $(TARGET_v2).exe
 TARGET_v3 := $(TARGET_v3).exe
 TARGET_v4 := $(TARGET_v4).exe
-LFLAGS += -static -lzahl-mingw
+LFLAGS += -static -lzahl-mingw -l:glew32s.lib -l glfw3-mingw -lopengl32 -lgdi32 -lws2_32
 else
 LFLAGS += -lzahl -lGLEW -lglfw3 -lX11 -lGL
 endif
