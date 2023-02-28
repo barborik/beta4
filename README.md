@@ -58,11 +58,13 @@ Each of the executable files will tell you its usage when you run it with insuff
 ./beta4-v4.0 <COMMANDER|WORKER> <IP ADDRESS> <PORT> [COMMANDER: N ITEMS] [COMMANDER: MAX GEN] [COMMANDER: PER GEN]
 ```
 The usage of version 4 is a bit more complicated.<br>
-The network always needs to have exactly one COMMANDER program and at least one WORKER program to operate.<br>WORKER programs actually perform the computations while the COMMANDER program manages all of the WORKER programs. COMMANDER program specifies the<br>
+The network always needs to have exactly one COMMANDER program and at least one WORKER program to operate.<br>WORKER programs actually perform the computations while the COMMANDER program manages all of the WORKER programs.<br>
+COMMANDER program specifies the<br>
 ```[COMMANDER: N ITEMS]``` - number of items<br>
 ```[COMMANDER: MAX GEN]``` - maximum number of generations to simulate per thread<br>
 ```[COMMANDER: PER GEN]``` - population number per generation<br>
 which the WORKER program receives on connect.<br>
+The ```<IP ADDRESS>``` and ```<PORT>``` arguments on the COMMANDER program specify the network binding of the program while on the WORKER program it specifies the ip and port to connect to.<br>
 When you are done connecting all WORKER programs to the COMMANDER program press R (needs to be capital, hold down shift) and then ENTER. This will send a RUN command to all the WORKER programs. When a WORKER program is done with simulating the specified number of generations it sends its best result to the COMMANDER program. Once all WORKER programs are done simulating the final "best" solution is printed out on the COMMANDER program which exits right after, disconnecting all the WORKER programs. To exit the COMMANDER program a ctrl + c won't do, because of the non-blocking input that runs in a separate thread. To exit the COMMANDER program when needed press Q (needs to be capital, again) and then ENTER.
 
 
